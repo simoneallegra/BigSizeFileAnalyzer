@@ -62,6 +62,20 @@ Per altre configurazioni non è garantito il funzionamento
 
 2. Utilizza l'interfaccia grafica per selezionare il file da analizzare e indicare la parola da cercare.
 
+#### [Opzionale] Generazione files per tests
+
+E' possibile generare file testuali di lunghezza variabile per eseguire diversi test sul software.
+
+1. Avvia lo script python
+    ```sh
+    cd tests
+    text_file_generator.py
+    ```
+
+2. Segui leistruzioni espresse da riga di comando
+
+Questo script si appoggia ad una libreria per creare parole casuali <ins>in inglese</ins>
+
 ## Struttura del Progetto
 
 - [cpp_files]: Contiene il codice sorgente C++ per dividere i file in chunk.
