@@ -69,7 +69,7 @@ E' possibile generare file testuali di lunghezza variabile per eseguire diversi 
 1. Avvia lo script python
     ```sh
     cd tests
-    text_file_generator.py
+    python text_file_generator.py
     ```
 
 2. Segui leistruzioni espresse da riga di comando
