@@ -1,0 +1,9 @@
+## Rimuovi ambiente di lavoro
+**/venv/
+**/__pycache__/
+*.o
+.vscode/
+
+## Rimuovi eseguibili
+file_splitter
+searcher
