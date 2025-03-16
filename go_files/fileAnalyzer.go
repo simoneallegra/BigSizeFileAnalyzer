@@ -20,7 +20,7 @@ func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore
 	}
 }
 
-func (fa *FileAnalyzer) Analyze() error { // Metodo della Pseudo-Classe
+func (fa *FileAnalyzer) Analyze() error { // Metodo assegnato alla struct (error tipo di ritorno in caso di)
 
 	file, err := os.Open(fa.FilePath)
 	if err != nil {
