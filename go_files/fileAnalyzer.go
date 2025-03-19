@@ -13,7 +13,7 @@ type FileAnalyzer struct {
 	Positions   []int
 }
 
-func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore FileAnalyzer lageto alla struct sopra definita
+func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore FileAnalyzer legato alla struct sopra definita
 	return &FileAnalyzer{
 		FilePath:   filePath,
 		SearchTerm: searchTerm,
