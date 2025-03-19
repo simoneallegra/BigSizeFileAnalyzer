@@ -4,6 +4,7 @@ from pathlib import Path
 import time
 import json
 from typing import Tuple, List
+import queue
 
 project_path = Path(__file__).parent.parent # la cartella di progetto per lavorare con i path relativi
 _tmp_path = Path(f'{project_path}/_tmp/') # cartella dove avverrà l'elaborazione dei chunks
@@ -11,7 +12,9 @@ _tmp_path = Path(f'{project_path}/_tmp/') # cartella dove avverrà l'elaborazion
 # Mutex per la gestione della concorrenza delle variabili globali di output
 mutex = th.Lock()
 tot: int = 0
-output: List[Tuple[int, any]] = list()
+
+# Coda per la gestione della Shared Memory condivisa tra i thread per registrare le ricorrenze
+output = queue.Queue()
 
 def splitter(input_path : str, kbytes : int = 10000) -> None:
     """C++ subprocess per la divisione in chunk da n KB
@@ -32,21 +35,26 @@ def searcher(path: str, word: str) -> None:
         path (str): cartella dei file contenenti i chunks
         word (str): parola da ricercare per ogni chunk
     """
-    global tot
-    global output
+    global tot # global output
     
     process = subprocess.run([f'{project_path}/go_files/searcher', _tmp_path / path, word], capture_output = True, text = True)
-    
-    with mutex:
-        res = process.stdout.split("---")
-        tot = tot + int(res[0])
-        list = json.loads(res[1])  
 
-        if list is not None:
-            chunk_nr = int(str(path).split("_")[1].split(".")[0])
-            for elem in list:
-                t = (chunk_nr, elem)
-                output.append(t)
+    try:
+        with mutex:
+            res = process.stdout.split("---")
+            print(res[0])
+            tot = tot + int(res[0])
+            list = json.loads(res[1])  
+
+            if list is not None:
+                chunk_nr = int(str(path).split("_")[1].split(".")[0])
+                for elem in list:
+                    t = (chunk_nr, elem)
+                    output.put(t)
+                    
+    except Exception as e:
+        print("Errore")
+        print(e)
         
 def is_end_of_files() -> bool:
     """
@@ -85,20 +93,22 @@ def process_large_file(input_path: str, word) -> Tuple[int, list[Tuple[int, any]
         files = [file for file in _tmp_path.iterdir() if file.is_file()]
         
         for file in files:
-            if len(files) == 1 and file.name == "EOF": # Se trova il file EOF termina
+            if len(files) == 1 and file.name == "EOF": # Se trova il file EOF ed è unico -> termina
                 file.unlink()
                 run = 0
             elif len(files) == 0: # Se la cartella è vuota aspetta 
                 continue 
-            else: # Se viene trovato un chunk nuovo -> elabora
-                if file not in file_analyzed:
-                    searcher_thread = th.Thread(target=(lambda: searcher(file.name, word)))
-                    searcher_thread.start()
-                    
+            else: # Se viene trovato un chunk nuovo (escludendo EOF dalla lista) -> elabora
+                if file.name not in file_analyzed and "EOF" not in file.name:
+                    print(file.name)
                     file_analyzed.append(file.name)
                     
-        # Timer per evitare un ciclo troppo veloce dove i chunk non terminano l'elaborazione in GO prima di essere riselezionati
-        time.sleep(0.01) 
-        
-    return tot, output
+                    searcher_thread = th.Thread(target=(lambda: searcher(file.name, word)))
+                    searcher_thread.start()
+    
+    output_list = list()
+    while not output.empty():
+        output_list.append(output.get())
+    
+    return tot, output_list
     
