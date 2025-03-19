@@ -13,14 +13,14 @@ type FileAnalyzer struct {
 	Positions   []int
 }
 
-func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore Pseudo-Classe FileAnalyzer
+func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore FileAnalyzer lageto alla struct sopra definita
 	return &FileAnalyzer{
 		FilePath:   filePath,
 		SearchTerm: searchTerm,
 	}
 }
 
-func (fa *FileAnalyzer) Analyze() error { // Metodo della Pseudo-Classe
+func (fa *FileAnalyzer) Analyze() error { // Metodo assegnato alla struct (error tipo di ritorno in caso di)
 
 	file, err := os.Open(fa.FilePath)
 	if err != nil {
