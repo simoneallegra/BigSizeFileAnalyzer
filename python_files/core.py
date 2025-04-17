@@ -1,9 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading as th
 import subprocess
 from pathlib import Path
 import time
 import json
-from typing import Tuple, List
+from typing import Tuple
 import queue
 
 project_path = Path(__file__).parent.parent # la cartella di progetto per lavorare con i path relativi
@@ -42,7 +43,6 @@ def searcher(path: str, word: str) -> None:
     try:
         with mutex:
             res = process.stdout.split("---")
-            print(res[0])
             tot = tot + int(res[0])
             list = json.loads(res[1])  
 
@@ -53,8 +53,7 @@ def searcher(path: str, word: str) -> None:
                     output.put(t)
                     
     except Exception as e:
-        print("Errore")
-        print(e)
+        print(f"Error nel searcher {e}")
         
 def is_end_of_files() -> bool:
     """
@@ -85,30 +84,43 @@ def process_large_file(input_path: str, word) -> Tuple[int, list[Tuple[int, any]
     splitter_thread = th.Thread(target=(lambda: splitter(input_path)))
     splitter_thread.start()
     
-    file_analyzed = list() # utile per tenere traccia dei chunk analizzati così da non eseguire elaborazioni due volte
-
-    run = 1
-    while(run):
-        # Legge tutti i file nella cartella _tmp dedita dove cpp sta scrivendo i chunk che divide
-        files = [file for file in _tmp_path.iterdir() if file.is_file()]
-        
-        for file in files:
-            if len(files) == 1 and file.name == "EOF": # Se trova il file EOF ed è unico -> termina
-                file.unlink()
-                run = 0
-            elif len(files) == 0: # Se la cartella è vuota aspetta 
-                continue 
-            else: # Se viene trovato un chunk nuovo (escludendo EOF dalla lista) -> elabora
-                if file.name not in file_analyzed and "EOF" not in file.name:
-                    print(file.name)
-                    file_analyzed.append(file.name)
-                    
-                    searcher_thread = th.Thread(target=(lambda: searcher(file.name, word)))
-                    searcher_thread.start()
+    # Salvo i nomi dei file analizzati
+    file_analyzed = set()
     
+    # Salvo i pools
+    futures = []
+
+    run = True
+    
+    with ThreadPoolExecutor() as threadPoolExecutor:
+        """
+        https://docs.python.org/3/library/concurrent.futures.html#:~:text=Changed%20in%20version%203.5%3A%20If,number%20of%20workers%20for%20ProcessPoolExecutor.
+        """
+        
+        while run:
+            files = [file for file in _tmp_path.iterdir() if file.is_file()]
+            
+            for file in files:
+                
+                if file.name == "EOF" and len(files) == 1: # Se è rimasto solo il file 'EOF'
+                    file.unlink()
+                    run = False
+                    break
+                
+                elif file.name not in file_analyzed and "EOF" not in file.name: # Nuovo file da analizzare
+                    file_analyzed.add(file.name)
+                    futures.append(tuple(file.name, threadPoolExecutor.submit(searcher, file.name, word)))
+
+    # Aspetta la fine di tutti i thread 
+    for future in as_completed(futures):
+        try:
+            future.result()
+        except Exception as e:
+            print(f"Errore nel thread: {e}")
+
     output_list = list()
     while not output.empty():
         output_list.append(output.get())
     
     return tot, output_list
-    
+

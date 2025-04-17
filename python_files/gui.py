@@ -56,6 +56,7 @@ class FileAnalyzerApp(QWidget):
         self.load_button.clicked.connect(self.load_file)
 
         self.analyze_button = QPushButton('Analyze', self)
+        self.analyze_button.setEnabled(False)
         self.analyze_button.clicked.connect(self.analyze_file)
         
         self.text_area_label = QLabel("LOGs:", self)
@@ -87,6 +88,7 @@ class FileAnalyzerApp(QWidget):
         if file:
             self.file_path = file
             self.text_area.setText(f'File caricato: {file}')
+            self.analyze_button.setEnabled(True)
 
     def analyze_file(self) -> None:
         """
