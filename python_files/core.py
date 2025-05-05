@@ -107,12 +107,12 @@ def process_large_file(input_path: str, word) -> Tuple[int, list[Tuple[int, any]
                     future = threadPoolExecutor.submit(searcher, file.name, word)
                     futures[file.name] = future
 
-    # Aspetta la fine di tutti i thread 
-    for fn, future in futures.items():
-        try:
-            future.result()
-        except Exception as e:
-            print(f"Errore nel thread: {e}")
+        # Aspetta la fine di tutti i thread 
+        for future in as_completed(futures.values()):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"Errore nel thread: {e}")
 
     output_list = list()
     while not output.empty():
