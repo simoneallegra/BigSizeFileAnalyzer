@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading as th
 import subprocess
 from pathlib import Path
-import time
 import json
 from typing import Tuple
 import queue
@@ -83,12 +82,9 @@ def process_large_file(input_path: str, word) -> Tuple[int, list[Tuple[int, any]
     # 1) Esegue un Thread per lo Splitter in Cpp
     splitter_thread = th.Thread(target=(lambda: splitter(input_path)))
     splitter_thread.start()
-    
-    # Salvo i nomi dei file analizzati
-    file_analyzed = set()
-    
+        
     # Salvo i pools
-    futures = []
+    futures = dict()
 
     run = True
     
@@ -107,12 +103,12 @@ def process_large_file(input_path: str, word) -> Tuple[int, list[Tuple[int, any]
                     run = False
                     break
                 
-                elif file.name not in file_analyzed and "EOF" not in file.name: # Nuovo file da analizzare
-                    file_analyzed.add(file.name)
-                    futures.append(tuple(file.name, threadPoolExecutor.submit(searcher, file.name, word)))
+                elif file.name not in futures and "EOF" not in file.name: # Nuovo file da analizzare
+                    future = threadPoolExecutor.submit(searcher, file.name, word)
+                    futures[file.name] = future
 
     # Aspetta la fine di tutti i thread 
-    for future in as_completed(futures):
+    for fn, future in futures.items():
         try:
             future.result()
         except Exception as e:

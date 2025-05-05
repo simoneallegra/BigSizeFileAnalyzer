@@ -94,12 +94,15 @@ class FileAnalyzerApp(QWidget):
         """
         Avvio analisi: viene eseguito il main thread per la ricerca
         """
+        word = self.line_edit.text()   
+        
+        if word == "":
+            return
+        
         self.text_area.setText(f'Analisi Avviata ...')
         self.result_area.setText(f'')
         self.analyze_button.setEnabled(False)
-        
-        word = self.line_edit.text()       
-        
+                
         # Thread di ricerca (se si gestisce tramite Qthread la GUI non si blocca)
         self.analysis_thread = AnalyzerThread(self.file_path, word)
         self.analysis_thread.analysis_finished.connect(self.update_results)
@@ -128,26 +131,27 @@ class FileAnalyzerApp(QWidget):
                 count_dict[key] = 0
             count_dict[key] += 1
         
-        # Ordinamento e riempimento dei chunk vuoti:
-        # dove non vi sono stati trovati elementi si conterà 0            
-        all_keys = range(0, max(count_dict))
-        for key in all_keys:
-            if key not in count_dict:
-                count_dict[key] = 0
-        count_dict = dict(sorted(count_dict.items()))
-        
-        # Creazione del grafico
-        keys = list(count_dict.keys())
-        values = list(count_dict.values())
-        
-        plt.bar(keys, values)
-        
-        plt.xlabel('Testo')
-        plt.xticks([]) # Rimozione valori nelle ascisse
-        plt.ylabel('Ricorrenze')
-        plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True)) # Cast a Int dei valori nelle ordinate
-        plt.title('Distribuzione lungo il testo')
-        
-        # Apertura finestra del grafico risultato
-        plt.show()
-        
+        if len(count_dict) != 0:
+            
+            # Ordinamento e riempimento dei chunk vuoti:
+            # dove non vi sono stati trovati elementi si conterà 0            
+            all_keys = range(0, max(count_dict))
+            for key in all_keys:
+                if key not in count_dict:
+                    count_dict[key] = 0
+            count_dict = dict(sorted(count_dict.items()))
+            
+            # Creazione del grafico
+            keys = list(count_dict.keys())
+            values = list(count_dict.values())
+            
+            plt.bar(keys, values)
+            
+            plt.xlabel('Testo')
+            plt.xticks([]) # Rimozione valori nelle ascisse
+            plt.ylabel('Ricorrenze')
+            plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True)) # Cast a Int dei valori nelle ordinate
+            plt.title('Distribuzione lungo il testo')
+            
+            # Apertura finestra del grafico risultato
+            plt.show()
