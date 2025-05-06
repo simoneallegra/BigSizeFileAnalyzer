@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         
         std::string inputFilePath = argv[1];
         std::string outputDir = argv[2];
-        size_t chunckSize = std::stoull(argv[3]);
+        size_t chunckSize = std::stoull(argv[3]); // To int64_t
 
         // Crea la directory di output se non esiste
         if (!fs::exists(outputDir)) {

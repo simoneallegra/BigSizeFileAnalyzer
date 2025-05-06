@@ -48,7 +48,7 @@ Per altre configurazioni non è garantito il funzionamento
 5. Compila i file Go:
     ```sh
     cd go_files
-    ./build.sh
+    bash ./build.sh
     cd ..
     ```
 

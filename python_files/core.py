@@ -16,17 +16,17 @@ tot: int = 0
 # Coda per la gestione della Shared Memory condivisa tra i thread per registrare le ricorrenze
 output = queue.Queue()
 
-def splitter(input_path : str, kbytes : int = 10000) -> None:
+def splitter(input_path : str, bytes : int = 10000) -> None:
     """C++ subprocess per la divisione in chunk da n KB
 
     Args:
         input_path (str): path del file da dividere
-        kbytes (int): numero di kbytes per ogni chunk (10Kb di default)
+        bytes (int): numero di bytes per ogni chunk (10Kb di default)
     """
     subprocess.run([f'{project_path}/cpp_files/file_splitter',
                     input_path,
                     _tmp_path,
-                    str(kbytes)])
+                    str(bytes)])
     
 def searcher(path: str, word: str) -> None:
     """

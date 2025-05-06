@@ -34,8 +34,8 @@ func (fa *FileAnalyzer) Analyze() error { // Metodo assegnato alla struct (error
 		}
 		
 		fa.Positions = append(fa.Positions, linePosition) // Salva il termine trovato e la relativa posizione
-		nextPos := linePosition + len(fa.SearchTerm) // Sposta il puntatore per escludere la parola trovare e rieseguire l'analisi
 
+		var nextPos int
 		for linePosition != -1 {
 			
 			fa.Occurrences ++ // Incrementa il contatore di parole (lo fa per primo in quanto se siamo arrivati qui è già stata trovata una occorenza)
