@@ -13,13 +13,6 @@ type FileAnalyzer struct {
 	Positions   []int
 }
 
-func NewFileAnalyzer(filePath, searchTerm string) *FileAnalyzer { // Costruttore FileAnalyzer legato alla struct sopra definita
-	return &FileAnalyzer{
-		FilePath:   filePath,
-		SearchTerm: searchTerm,
-	}
-}
-
 func (fa *FileAnalyzer) Analyze() error { // Metodo assegnato alla struct (error tipo di ritorno in caso di)
 
 	file, err := os.Open(fa.FilePath)

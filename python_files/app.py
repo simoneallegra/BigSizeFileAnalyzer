@@ -6,7 +6,7 @@ def main():
     app = QApplication(sys.argv)
     window = FileAnalyzerApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec()) # il codice di uscira di app.exec() viene passato a sys.exit
 
 if __name__ == '__main__':
     main()
